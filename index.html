@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Advanced Calculator</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+<style>
+  /* Fallback styles if Bootstrap doesn't load */
+  body {
+    font-family: Arial, sans-serif;
+    background: #f8f9fa;
+  }
+  .calculator {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background: #fff;
+  }
+  #display {
+    font-size: 1.5rem;
+    height: 50px;
+    margin-bottom: 10px;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background: #e9ecef;
+  }
+</style>
+</head>
+<body>
+<div class="calculator container">
+  <h2 class="mb-3 text-center">Advanced Calculator</h2>
+  <div id="display" class="mb-3" readonly></div>
+  <div class="d-grid gap-2 mb-3">
+    <button class="btn btn-secondary" id="clear">Clear</button>
+  </div>
+  <div class="row g-2 mb-3">
+    <div class="col-3">
+      <button class="btn btn-primary w-100 number" data-num="7">7</button>
+    </div>
+    <div class="col-3">
+      <button class="btn btn-primary w-100 number" data-num="8">8</button>
+    </div>
+    <div class="col-3">
+      <button class="btn btn-primary w-100 number" data-num="9">9</button>
+    </div>
+    <div class="col-3">
+      <button class="btn btn-warning w-100" data-op="/">&#247;</button>
+    </div>
+  </div>
+  <div class="row g-2 mb-3">
+    <div class="col-3">
+      <button class="btn btn-primary w-100 number" data-num="4">4</button>
+    </div>
+    <div class="col-3">
+      <button class="btn btn-primary w-100 number" data-num="5">5</button>
+    </div>
+    <div class="col-3">
+      <button class="btn btn-primary w-100 number" data-num="6">6</button>
+    </div>
+    <div class="col-3">
+      <button class="btn btn-warning w-100" data-op="*">&#215;</button>
+    </div>
+  </div>
+  <div class="row g-2 mb-3">
+    <div class="col-3">
+      <button class="btn btn-primary w-100 number" data-num="1">1</button>
+    </div>
+    <div class="col-3">
+      <button class="btn btn-primary w-100 number" data-num="2">2</button>
+    </div>
+    <div class="col-3">
+      <button class="btn btn-primary w-100 number" data-num="3">3</button>
+    </div>
+    <div class="col-3">
+      <button class="btn btn-warning w-100" data-op="-">-</button>
+    </div>
+  </div>
+  <div class="row g-2 mb-3">
+    <div class="col-3">
+      <button class="btn btn-primary w-100 number" data-num="0">0</button>
+    </div>
+    <div class="col-3">
+      <button class="btn btn-primary w-100 decimal" data-dot=".">.</button>
+    </div>
+    <div class="col-3">
+      <button class="btn btn-success w-100" id="equals">=</button>
+    </div>
+    <div class="col-3">
+      <button class="btn btn-warning w-100" data-op="+">+</button>
+    </div>
+  </div>
+</div>
+
+<script>
+document.title = 'Advanced Calculator';
+
+const display = document.getElementById('display');
+const clearBtn = document.getElementById('clear');
+const equalsBtn = document.getElementById('equals');
+
+const numberButtons = document.querySelectorAll('.number');
+const dotButton = document.querySelector('.decimal');
+const operationButtons = document.querySelectorAll('button[data-op]');
+
+let currentInput = '';
+
+function updateDisplay() {
+  display.textContent = currentInput || '0';
+}
+
+function appendNumber(num) {
+  // Prevent multiple dots in the current number
+  if (num === '.') {
+    const parts = currentInput.split(/[\+\-\*\/]/);
+    const lastPart = parts[parts.length -1];
+    if (lastPart.includes('.')) return;
+  }
+  currentInput += num;
+  updateDisplay();
+}
+
+function setOperation(op) {
+  if (currentInput === '') return;
+  // Avoid consecutive operators
+  const lastChar = currentInput.slice(-1);
+  if (['+', '-', '*', '/'].includes(lastChar)) {
+    currentInput = currentInput.slice(0, -1) + op;
+  } else {
+    currentInput += op;
+  }
+  updateDisplay();
+}
+
+function clearInput() {
+  currentInput = '';
+  updateDisplay();
+}
+
+function evaluate() {
+  try {
+    // Basic validation: prevent division by zero
+    // Evaluate only if expression is valid
+    if (/\/0($|[+\-\*\/])/.test(currentInput)) {
+      alert('Error: Division by zero');
+      clearInput();
+      return;
+    }
+    const result = eval(currentInput);
+    if (result === Infinity || result === -Infinity || isNaN(result)) {
+      alert('Invalid calculation');
+      clearInput();
+    } else {
+      currentInput = result.toString();
+      updateDisplay();
+    }
+  } catch (e) {
+    alert('Invalid input');
+    clearInput();
+  }
+}
+
+clearBtn.addEventListener('click', clearInput);
+equalsBtn.addEventListener('click', evaluate);
+
+numberButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    appendNumber(btn.dataset.num);
+  });
+});
+
+dotButton.addEventListener('click', () => {
+  appendNumber('.');
+});
+
+operationButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    setOperation(btn.dataset.op);
+  });
+});
+
+// Initialize display
+updateDisplay();
+
+// Additional checks
+try {
+  if (document.title !== 'Advanced Calculator') throw 'Title mismatch';
+  if (!document.querySelector('input[type="text"]')) throw 'Input selector missing';
+  if (!document.querySelector('button')) throw 'Button selector missing';
+  // Evaluate a safe expression
+  const testExpr = document.querySelector('input[type="text"]').value || '0';
+  const testEval = (() => {
+    try {
+      return eval(testExpr);
+    } catch { return false; }
+  })();
+  if (testEval === false) throw 'Eval fails';
+} catch (e) {
+  console.error('Validation failed:', e);
+}
+</script>
+</body>
+</html>
